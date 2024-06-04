@@ -9,12 +9,22 @@ namespace MonitorWrapperLibrary
 {
     public static class MonitorWrapper
     {
-        public static bool SetProcessDpiAwareness()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>true version >= 8.1</returns>
+        public static bool OSVersionCheck()
         {
             Microsoft.VisualBasic.Devices.Computer computer = new Microsoft.VisualBasic.Devices.Computer();
             var versions = computer.Info.OSVersion.Split('.');
             double verson = double.Parse(versions[0] + "." + versions[1]);
-            if (verson >= 8.0)
+            return verson >= 8.1;
+        }
+
+        public static bool SetProcessDpiAwareness()
+        {
+
+            if (OSVersionCheck())
             {
                 int result = NativeMethods.SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
                 if (result == 0)
@@ -35,7 +45,7 @@ namespace MonitorWrapperLibrary
 
         private sealed class EnumMonitors
         {
-            public  List<ScreenInfo> screens = new List<ScreenInfo>();
+            public List<ScreenInfo> screens = new List<ScreenInfo>();
             public bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, RECT rect, IntPtr dwData)
             {
                 MONITORINFO mi = new MONITORINFO();
@@ -45,14 +55,39 @@ namespace MonitorWrapperLibrary
                     var monitor = new AreaInfo(mi.rcMonitor.Left, mi.rcMonitor.Top, mi.rcMonitor.Right, mi.rcMonitor.Bottom);
                     var working = new AreaInfo(mi.rcWork.Left, mi.rcWork.Top, mi.rcWork.Right, mi.rcWork.Bottom);
                     uint dpiX, dpiY;
-                    NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // 0 = MDT_EFFECTIVE_DPI
-                    double scaleFactor = dpiX / 96.0; // Windows standard DPI is 96
+                    double scaleFactor = 1.0;
+
+                    if (OSVersionCheck())
+                    {
+                        NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // 0 = MDT_EFFECTIVE_DPI
+                        scaleFactor = dpiX / 96.0; // Windows standard DPI is 96
+                    }
+                   else
+                    {
+                       scaleFactor = GetScaleFactorWhenOldOS();
+                    }
 
                     // ==1 is PRIMARY
                     screens.Add(new ScreenInfo((mi.dwFlags & 1) == 1, monitor, working, scaleFactor));
                 }
 
                 return true;
+            }
+
+            /// <summary>
+            /// when the OS is old, we can't use GetDpiForMonitor
+            /// </summary>
+            /// <returns></returns>
+            private static double GetScaleFactorWhenOldOS()
+            {
+                float dpiX, dpiY;
+                using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+                {
+                    dpiX = graphics.DpiX;
+                    dpiY = graphics.DpiY;
+                }
+                double scaleFactor = dpiX / 96.0; // windows 96, mac 72
+                return scaleFactor;
             }
         }
     }
