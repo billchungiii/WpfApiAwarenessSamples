@@ -36,12 +36,6 @@ namespace MonitorWrapperLibrary
             }
             return false;
         }
-
-        public static void Test(Window window)
-        {
-            System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(window).Handle);
-        }
-
         /// <summary>
         /// 
         /// </summary>
