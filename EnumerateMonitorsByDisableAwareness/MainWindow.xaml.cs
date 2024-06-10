@@ -30,9 +30,15 @@ namespace EnumerateMonitorsByDisableAwareness
         /// <param name="e"></param>
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            int i = 0;
+            foreach (var sc in System.Windows.Forms.Screen.AllScreens)
+            {
+                System.Diagnostics.Debug.WriteLine($"{i}, top:{sc.Bounds.Top} , left:{sc.Bounds.Left}, bottom:{sc.Bounds.Bottom} , right:{sc.Bounds.Right}, x:{sc.Bounds.X} , y:{sc.Bounds.Y},  width:{sc.Bounds.Width} ,height:{sc.Bounds.Height}, ");
+                i++;
+            }
             MonitorWrapper.GetScreens().ForEach(screen =>
             {
-                System.Diagnostics.Debug.WriteLine($"Primary: {screen.IsPrimary} , Scale: {screen.ScaleFactor}, Width: {screen.MonitorArea.Width}");
+                System.Diagnostics.Debug.WriteLine($"Primary: {screen.IsPrimary} , Scale: {screen.ScaleFactor}, Width: {screen.MonitorArea.Width}, Top : {screen.MonitorArea.Top}, Left: {screen.MonitorArea.Left} ");
             });
         }
     }

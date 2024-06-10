@@ -1,9 +1,11 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
 
 namespace MonitorWrapperLibrary
 {
@@ -26,7 +28,7 @@ namespace MonitorWrapperLibrary
 
             if (OSVersionCheck())
             {
-                int result = NativeMethods.SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                int result = NativeMethods.SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_SYSTEM_DPI_AWARE);
                 if (result == 0)
                 {
                     return true;
@@ -35,12 +37,47 @@ namespace MonitorWrapperLibrary
             return false;
         }
 
-        public static List<ScreenInfo> GetScreens()
+        public static void Test(Window window)
+        {
+            System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(window).Handle);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="window"></param>
+        /// <returns>Intptr</returns>
+        public static IntPtr GetScreenOfWindow(Window window)
         {
 
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+            IntPtr monitor = NativeMethods.MonitorFromWindow(handle, NativeMethods.MONITOR_DEFAULTTONEAREST);
+            return monitor;
+        }
+
+        public static List<ScreenInfo> GetScreens()
+        {
             var enumMonitors = new EnumMonitors();
             NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, enumMonitors.MonitorEnumProc, IntPtr.Zero);
             return enumMonitors.screens;
+        }
+
+        public static PROCESS_DPI_AWARENESS GetProcessDpiAwareness()
+        {
+            var handle = Process.GetCurrentProcess().Handle;
+            uint result = NativeMethods.GetProcessDpiAwareness(handle, out PROCESS_DPI_AWARENESS value);
+            switch (result)
+            {
+                case 0:
+                    return value;
+                case 0x80070057:
+                    throw new InvalidOperationException($"Code 0x80070057, The handle or pointer passed in is not valid.");
+                case 0x80070005:
+                    throw new InvalidOperationException($"Code 0x80070005, The application does not have sufficient privileges.");
+                default:
+                    throw new InvalidOperationException($"Code {result:X}");
+            }
+
         }
 
         private sealed class EnumMonitors
@@ -48,27 +85,28 @@ namespace MonitorWrapperLibrary
             public List<ScreenInfo> screens = new List<ScreenInfo>();
             public bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, RECT rect, IntPtr dwData)
             {
-                MONITORINFO mi = new MONITORINFO();
-
+                MONITORINFO mi = new MONITORINFO();                
                 if (NativeMethods.GetMonitorInfo(hMonitor, mi))
                 {
                     var monitor = new AreaInfo(mi.rcMonitor.Left, mi.rcMonitor.Top, mi.rcMonitor.Right, mi.rcMonitor.Bottom);
                     var working = new AreaInfo(mi.rcWork.Left, mi.rcWork.Top, mi.rcWork.Right, mi.rcWork.Bottom);
                     uint dpiX, dpiY;
                     double scaleFactor = 1.0;
-
-                    if (OSVersionCheck())
+                    ScaleFactorType scaleFactorType = ScaleFactorType.Unknown;
+                    if (OSVersionCheck() && GetProcessDpiAwareness() == PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE)
                     {
                         NativeMethods.GetDpiForMonitor(hMonitor, 0, out dpiX, out dpiY); // 0 = MDT_EFFECTIVE_DPI
                         scaleFactor = dpiX / 96.0; // Windows standard DPI is 96
+                        scaleFactorType = ScaleFactorType.PerMonitor;
                     }
-                   else
+                    else
                     {
-                       scaleFactor = GetScaleFactorWhenOldOS();
+                        scaleFactor = GetScaleFactorWhenOldOS();
+                        scaleFactorType = ScaleFactorType.AsPrimary;
                     }
 
                     // ==1 is PRIMARY
-                    screens.Add(new ScreenInfo((mi.dwFlags & 1) == 1, monitor, working, scaleFactor));
+                    screens.Add(new ScreenInfo(hMonitor, (mi.dwFlags & 1) == 1, monitor, working, scaleFactor, scaleFactorType));
                 }
 
                 return true;
@@ -102,14 +140,22 @@ namespace MonitorWrapperLibrary
         /// <param name="y">The display's top corner Y value.</param>
         /// <param name="w">The width of the display.</param>
         /// <param name="h">The height of the display.</param>
-        public ScreenInfo(bool primary, AreaInfo monitoArea, AreaInfo workingArea, double scaleFactor)
+        public ScreenInfo(IntPtr screenPtr, bool primary, AreaInfo monitoArea, AreaInfo workingArea, double scaleFactor, ScaleFactorType scaleFactorType)
         {
-            this.IsPrimary = primary;
+            ScreenPtr = screenPtr;
+            IsPrimary = primary;
             MonitorArea = monitoArea;
             WorkingArea = workingArea;
             ScaleFactor = scaleFactor;
+            ScaleFactorType = scaleFactorType;
+            ScaledMonitorArea = new AreaInfo(monitoArea.Left / scaleFactor, monitoArea.Top / scaleFactor, monitoArea.Right / scaleFactor, monitoArea.Bottom / scaleFactor);
+            ScaledWorkingArea = new AreaInfo(workingArea.Left / scaleFactor, workingArea.Top / scaleFactor, workingArea.Right / scaleFactor, workingArea.Bottom / scaleFactor);
+
         }
 
+        public IntPtr ScreenPtr { get; }
+
+        public ScaleFactorType ScaleFactorType { get; }
         public double ScaleFactor { get; }
         /// <summary>
         /// Gets a value indicating whether the display device is the primary monitor.
@@ -119,11 +165,15 @@ namespace MonitorWrapperLibrary
         public AreaInfo MonitorArea { get; }
 
         public AreaInfo WorkingArea { get; }
+
+        public AreaInfo ScaledMonitorArea { get; }
+
+        public AreaInfo ScaledWorkingArea { get; }
     }
 
     public struct AreaInfo
     {
-        public AreaInfo(int left, int top, int right, int bottom)
+        public AreaInfo(double left, double top, double right, double bottom)
         {
             this.Left = left;
             this.Top = top;
@@ -132,11 +182,18 @@ namespace MonitorWrapperLibrary
             this.Width = Math.Abs(right - left);
             this.Height = Math.Abs(bottom - top);
         }
-        public int Left { get; }
-        public int Top { get; }
-        public int Right { get; }
-        public int Bottom { get; }
-        public int Width { get; }
-        public int Height { get; }
+        public double Left { get; }
+        public double Top { get; }
+        public double Right { get; }
+        public double Bottom { get; }
+        public double Width { get; }
+        public double Height { get; }
+    }
+
+    public enum ScaleFactorType
+    {
+        Unknown,
+        AsPrimary,
+        PerMonitor
     }
 }

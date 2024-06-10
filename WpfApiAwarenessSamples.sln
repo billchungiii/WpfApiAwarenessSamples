@@ -5,11 +5,17 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonitorWrapperLibrary", "MonitorWrapperLibrary\MonitorWrapperLibrary.csproj", "{62B49280-D86E-40B2-8B6E-EDDBD7107300}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnumerateMonitorsByApiAware", "EnumerateMonitorsByApiAware\EnumerateMonitorsByApiAware.csproj", "{0EBDEA68-A7CF-4BBF-9F3D-49906F946700}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumerateMonitorsByApiAware", "EnumerateMonitorsByApiAware\EnumerateMonitorsByApiAware.csproj", "{0EBDEA68-A7CF-4BBF-9F3D-49906F946700}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnumerateMonitorsByNothing", "EnumerateMonitorsByNothing\EnumerateMonitorsByNothing.csproj", "{A79E618F-B618-4494-B23E-CF0A7D2C3C70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumerateMonitorsByNothing", "EnumerateMonitorsByNothing\EnumerateMonitorsByNothing.csproj", "{A79E618F-B618-4494-B23E-CF0A7D2C3C70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnumerateMonitorsByDisableAwareness", "EnumerateMonitorsByDisableAwareness\EnumerateMonitorsByDisableAwareness.csproj", "{51E95A2B-C418-4296-97B4-F4CFF4A14C4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumerateMonitorsByDisableAwareness", "EnumerateMonitorsByDisableAwareness\EnumerateMonitorsByDisableAwareness.csproj", "{51E95A2B-C418-4296-97B4-F4CFF4A14C4B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DpiTestSample001", "DpiTestSample001\DpiTestSample001.csproj", "{27508419-20E9-401C-8500-FDE13877A0D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BindingLibrary", "BindingLibrary\BindingLibrary.csproj", "{D543C64F-CFDD-404E-827A-5475FF7DE3D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorWrapperLibrary002", "MonitorWrapperLibrary002\MonitorWrapperLibrary002.csproj", "{E844585E-B41F-4C2E-9E4C-BDD42A45EBA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +39,18 @@ Global
 		{51E95A2B-C418-4296-97B4-F4CFF4A14C4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51E95A2B-C418-4296-97B4-F4CFF4A14C4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51E95A2B-C418-4296-97B4-F4CFF4A14C4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27508419-20E9-401C-8500-FDE13877A0D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27508419-20E9-401C-8500-FDE13877A0D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27508419-20E9-401C-8500-FDE13877A0D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27508419-20E9-401C-8500-FDE13877A0D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D543C64F-CFDD-404E-827A-5475FF7DE3D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D543C64F-CFDD-404E-827A-5475FF7DE3D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D543C64F-CFDD-404E-827A-5475FF7DE3D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D543C64F-CFDD-404E-827A-5475FF7DE3D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E844585E-B41F-4C2E-9E4C-BDD42A45EBA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E844585E-B41F-4C2E-9E4C-BDD42A45EBA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E844585E-B41F-4C2E-9E4C-BDD42A45EBA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E844585E-B41F-4C2E-9E4C-BDD42A45EBA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
