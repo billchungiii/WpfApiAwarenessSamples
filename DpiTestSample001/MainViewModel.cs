@@ -93,9 +93,6 @@ namespace DpiTestSample001
                             window.Left = next.ScaledLeft;
                             ScreenIndex = ScreenViewModels.IndexOf(next);
                         }
-
-
-
                     });
                 }
                 return _moveCommand;
